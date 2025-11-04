@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Monitoring Wearable Data Logger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            color: #4cc9f0;
+        }
+        
+        .data-input {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        input, select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #4cc9f0;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #3aa8d0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .data-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .data-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .data-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .data-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .data-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .data-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .data-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .tree-visualization {
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .node {
+            background: rgba(76, 201, 240, 0.8);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .level {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .lines {
+            display: flex;
+            justify-content: space-around;
+            width: 80%;
+            margin: 5px 0;
+        }
+        
+        .line {
+            height: 20px;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard, .data-display {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Health Monitoring Wearable</h1>
+            <p class="subtitle">Data Logger with Linked Lists & Tree Structures</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Heart Rate</div>
+                <div class="stat-value" id="heartRate">72</div>
+                <div class="stat-label">BPM</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Steps</div>
+                <div class="stat-value" id="steps">8,542</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Calories</div>
+                <div class="stat-value" id="calories">412</div>
+                <div class="stat-label">kcal</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Sleep</div>
+                <div class="stat-value" id="sleep">7.2</div>
+                <div class="stat-label">hours</div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h2><i>➕</i> Add Health Data</h2>
+                <div class="data-input">
+                    <div class="input-group">
+                        <label for="dataType">Data Type</label>
+                        <select id="dataType">
+                            <option value="heartRate">Heart Rate</option>
+                            <option value="steps">Steps</option>
+                            <option value="calories">Calories</option>
+                            <option value="sleep">Sleep</option>
+                            <option value="bloodPressure">Blood Pressure</option>
+                            <option value="oxygen">Blood Oxygen</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="dataValue">Value</label>
+                        <input type="text" id="dataValue" placeholder="Enter value">
+                    </div>
+                    <button id="addData">Add Data Point</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i>📊</i> Data Structure Info</h2>
+                <p>This application uses:</p>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>Linked Lists</strong> to store sequential health data points</li>
+                    <li><strong>Binary Search Trees</strong> to organize data for efficient searching</li>
+                </ul>
+                <p>Each data point is stored with a timestamp and value, creating a comprehensive health history.</p>
+                <button id="viewStructures">View Data Structures</button>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="card">
+                <h2><i>📈</i> Recent Data</h2>
+                <div class="data-list" id="recentData">
+                    <!-- Data items will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i>🌳</i> Data Tree Visualization</h2>
+                <div class="tree-visualization">
+                    <p>Binary Search Tree of Health Metrics</p>
+                    <div class="tree">
+                        <div class="level">
+                            <div class="node">72</div>
+                        </div>
+                        <div class="lines">
+                            <div class="line"></div>
+                            <div class="line"></div>
+                        </div>
+                        <div class="level">
+                            <div class="node">68</div>
+                            <div class="node">75</div>
+                        </div>
+                        <div class="lines">
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                        </div>
+                        <div class="level">
+                            <div class="node">65</div>
+                            <div class="node">70</div>
+                            <div class="node">73</div>
+                            <div class="node">78</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Health Monitoring Wearable Data Logger | Simulated Implementation</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data structures implementation
+        class DataNode {
+            constructor(timestamp, type, value) {
+                this.timestamp = timestamp;
+                this.type = type;
+                this.value = value;
+                this.next = null;
+            }
+        }
+
+        class LinkedList {
+            constructor() {
+                this.head = null;
+                this.tail = null;
+                this.length = 0;
+            }
+            
+            append(timestamp, type, value) {
+                const newNode = new DataNode(timestamp, type, value);
+                
+                if (!this.head) {
+                    this.head = newNode;
+                    this.tail = newNode;
+                } else {
+                    this.tail.next = newNode;
+                    this.tail = newNode;
+                }
+                
+                this.length++;
+                return newNode;
+            }
+            
+            toArray() {
+                const result = [];
+                let current = this.head;
+                
+                while (current) {
+                    result.push({
+                        timestamp: current.timestamp,
+                        type: current.type,
+                        value: current.value
+                    });
+                    current = current.next;
+                }
+                
+                return result;
+            }
+        }
+
+        class TreeNode {
+            constructor(value, timestamp, type) {
+                this.value = value;
+                this.timestamp = timestamp;
+                this.type = type;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+        class BinarySearchTree {
+            constructor() {
+                this.root = null;
+            }
+            
+            insert(value, timestamp, type) {
+                const newNode = new TreeNode(value, timestamp, type);
+                
+                if (this.root === null) {
+                    this.root = newNode;
+                } else {
+                    this.insertNode(this.root, newNode);
+                }
+            }
+            
+            insertNode(node, newNode) {
+                if (newNode.value < node.value) {
+                    if (node.left === null) {
+                        node.left = newNode;
+                    } else {
+                        this.insertNode(node.left, newNode);
+                    }
+                } else {
+                    if (node.right === null) {
+                        node.right = newNode;
+                    } else {
+                        this.insertNode(node.right, newNode);
+                    }
+                }
+            }
+            
+            inOrderTraversal(node = this.root, result = []) {
+                if (node !== null) {
+                    this.inOrderTraversal(node.left, result);
+                    result.push({
+                        value: node.value,
+                        timestamp: node.timestamp,
+                        type: node.type
+                    });
+                    this.inOrderTraversal(node.right, result);
+                }
+                return result;
+            }
+        }
+
+        // Initialize data structures
+        const dataList = new LinkedList();
+        const dataTree = new BinarySearchTree();
+
+        // DOM elements
+        const addDataBtn = document.getElementById('addData');
+        const viewStructuresBtn = document.getElementById('viewStructures');
+        const recentDataList = document.getElementById('recentData');
+        const heartRateStat = document.getElementById('heartRate');
+        const stepsStat = document.getElementById('steps');
+        const caloriesStat = document.getElementById('calories');
+        const sleepStat = document.getElementById('sleep');
+
+        // Add sample data
+        function initializeSampleData() {
+            const now = new Date();
+            const sampleData = [
+                { type: 'heartRate', value: 72, minutesAgo: 5 },
+                { type: 'heartRate', value: 75, minutesAgo: 10 },
+                { type: 'heartRate', value: 68, minutesAgo: 15 },
+                { type: 'steps', value: 125, minutesAgo: 20 },
+                { type: 'calories', value: 15, minutesAgo: 25 },
+                { type: 'sleep', value: 0.1, minutesAgo: 30 },
+                { type: 'heartRate', value: 70, minutesAgo: 35 },
+                { type: 'steps', value: 200, minutesAgo: 40 }
+            ];
+            
+            sampleData.forEach(data => {
+                const timestamp = new Date(now.getTime() - data.minutesAgo * 60000);
+                dataList.append(timestamp, data.type, data.value);
+                dataTree.insert(data.value, timestamp, data.type);
+            });
+            
+            updateRecentDataDisplay();
+        }
+
+        // Update the recent data display
+        function updateRecentDataDisplay() {
+            recentDataList.innerHTML = '';
+            const dataArray = dataList.toArray().slice(-5).reverse();
+            
+            dataArray.forEach(data => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'data-item';
+                
+                const time = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                dataItem.innerHTML = `
+                    <div>
+                        <div class="data-type">${formatDataType(data.type)}</div>
+                        <div class="data-time">${time}</div>
+                    </div>
+                    <div class="data-value">${data.value} ${getUnit(data.type)}</div>
+                `;
+                
+                recentDataList.appendChild(dataItem);
+            });
+        }
+
+        // Format data type for display
+        function formatDataType(type) {
+            const typeMap = {
+                'heartRate': 'Heart Rate',
+                'steps': 'Steps',
+                'calories': 'Calories',
+                'sleep': 'Sleep',
+                'bloodPressure': 'Blood Pressure',
+                'oxygen': 'Blood Oxygen'
+            };
+            
+            return typeMap[type] || type;
+        }
+
+        // Get unit for data type
+        function getUnit(type) {
+            const unitMap = {
+                'heartRate': 'BPM',
+                'steps': 'steps',
+                'calories': 'kcal',
+                'sleep': 'hrs',
+                'bloodPressure': 'mmHg',
+                'oxygen': '%'
+            };
+            
+            return unitMap[type] || '';
+        }
+
+        // Add new data point
+        addDataBtn.addEventListener('click', () => {
+            const dataType = document.getElementById('dataType').value;
+            const dataValue = document.getElementById('dataValue').value.trim();
+            
+            if (!dataValue) {
+                alert('Please enter a value');
+                return;
+            }
+            
+            const numericValue = parseFloat(dataValue);
+            if (isNaN(numericValue)) {
+                alert('Please enter a valid number');
+                return;
+            }
+            
+            const timestamp = new Date();
+            
+            // Add to linked list
+            dataList.append(timestamp, dataType, numericValue);
+            
+            // Add to binary search tree
+            dataTree.insert(numericValue, timestamp, dataType);
+            
+            // Update display
+            updateRecentDataDisplay();
+            
+            // Update stats if applicable
+            if (dataType === 'heartRate') {
+                heartRateStat.textContent = numericValue;
+            }
+            
+            // Clear input
+            document.getElementById('dataValue').value = '';
+            
+            // Show confirmation
+            alert(`Added ${formatDataType(dataType)}: ${numericValue} ${getUnit(dataType)}`);
+        });
+
+        // View data structures
+        viewStructuresBtn.addEventListener('click', () => {
+            const listData = dataList.toArray();
+            const treeData = dataTree.inOrderTraversal();
+            
+            alert(`Linked List contains ${listData.length} data points\nBinary Search Tree contains ${treeData.length} data points\n\nCheck the console for detailed structure information.`);
+            
+            console.log('Linked List:', dataList);
+            console.log('Binary Search Tree (in-order):', treeData);
+        });
+
+        // Initialize with sample data
+        initializeSampleData();
+    </script>
+</body>
+</html>
